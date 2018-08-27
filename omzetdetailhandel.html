@@ -54,6 +54,17 @@ th.num, td.num { text-align: right; }
 <!-- load the d3.js library -->    	
 <script src="//d3js.org/d3.v4.min.js"></script>
 <script>
+	
+var csv='jaar,eur
+2011,104.3
+2012,105.5
+2013,102.8
+2014,104.0
+2015,107.1
+2016,109.7
+2017*,114.3
+2018**,118.3';
+
 	// Set the dimensions of the canvas / graph
 //var margin = {top: 10, right: 20, bottom: 40, left: 50},//
 var margin = {top: 40, right: 50, bottom: 50, left: 75},
@@ -99,33 +110,35 @@ var chart = d3.select("body").append("svg")
 	  "translate(" + margin.left + "," + margin.top + ")");
 
 	// Get the data
-d3.csv("ecommarktanalyse.csv", function(error, data) {
-  if (error) throw error;
+//d3.csv("ecommarktanalyse.csv", function(error, data) {
+  //if (error) throw error;
   
+var data = d3.csvParse(csv);
+	
   	// format the data
   data.forEach(function(d) {
-    d.dhomzetcbs = +d.dhomzetcbs;
+    d.eur = +d.eur;
   });
 	
   	// Scale the range of the data in the domains
-  xb.domain(data.map(function(d) { return d.jaar1; }));
-  yb.domain([0, d3.max(data, function(d) { return d.dhomzetcbs; })]);	
+  xb.domain(data.map(function(d) { return d.jaar; }));
+  yb.domain([0, d3.max(data, function(d) { return d.eur; })]);	
   
 	// append the rectangles for the bar chart
   chart.selectAll(".bar")
       .data(data)
     .enter().append("rect")
       .attr("class", "bar")
-      .attr("x", function(d) { return xb(d.jaar1); })
+      .attr("x", function(d) { return xb(d.jaar); })
       .attr("width", xb.bandwidth())
-      .attr("y", function(d) { return yb(d.dhomzetcbs); })
-      .attr("height", function(d) { return height - yb(d.dhomzetcbs); })
+      .attr("y", function(d) { return yb(d.eur); })
+      .attr("height", function(d) { return height - yb(d.eur); })
       .on("mousemove", function(d){
             tooltip
               .style("left", d3.event.pageX + 10 + "px")
               .style("top", d3.event.pageY - 25 + "px")
               .style("display", "inline-block")
-              .html((d.jaar1) + "<br>" + (d.dhomzetcbs) + " miljard euro");
+              .html((d.jaar) + "<br>" + (d.eur) + " miljard euro");
         })
     		.on("mouseout", function(d){ tooltip.style("display", "none");});
   
