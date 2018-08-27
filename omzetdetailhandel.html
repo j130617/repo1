@@ -1,170 +1,60 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style> /* set the CSS */
-body { font: 12px Arial;}
-	/* opmaak linechart*/
-path { 
-    stroke: steelblue;
-    stroke-width: 2;
-    fill: none;
-}
-.axis path,
-.axis line {
-    fill: none;
-    stroke: grey;
-    stroke-width: 1;
-    shape-rendering: crispEdges;
-}
-	/*opmaak legenda*/
-.legend {
-    font-size: 10px;
-    /*font-weight: bold;*/
-    text-anchor: middle;
-}
-	/* opmaak barchart*/
 .bar { fill: steelblue; }
-	
-.toolTip {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    position: absolute;
-    display: none;
-    width: auto;
-    height: auto;
-    background: none repeat scroll 0 0 white;
-    border: 0 none;
-    border-radius: 8px 8px 8px 8px;
-    box-shadow: -3px 3px 15px #888888;
-    color: black;
-    font: 12px sans-serif;
-    padding: 5px;
-    text-align: center;
-}
-	
-	/* opmaak tabel*/
-th { text-align: left; }
-/*th, td { padding: 1px 4px;}*/
-th, td { padding: 0 1em 0.5ex 0;}
-th.center, td.center { text-align: center; }
-/*th.num, td.num { text-align: center; }*/
-th.num, td.num { text-align: right; }
-
 </style>
 <body>
 	
 <!-- load the d3.js library -->    	
 <script src="//d3js.org/d3.v4.min.js"></script>
 <script>
-	
-var csv= `jaar,eur
-2011,104.3
-2012,105.5
-2013,102.8
-2014,104.0
-2015,107.1
-2016,109.7
-2017*,114.3
-2018**,118.3`;
-
-	// Set the dimensions of the canvas / graph
-//var margin = {top: 10, right: 20, bottom: 40, left: 50},//
-var margin = {top: 40, right: 50, bottom: 50, left: 75},
-    width = 750 - margin.left - margin.right,
+// set the dimensions and margins of the graph
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 700 - margin.left - margin.right,
     height = 425 - margin.top - margin.bottom;
-	
-// Parse the date / time
-var parseDate = d3.timeParse("%b %Y");
-	
-	// set the ranges REGULIER xb en yb = bar chart /  xl en yl = line graph / xbg, ybg en zbg = bar chart grouped
-	// ranges bar chart // 
-var xb = d3.scaleBand()
-        .range([0, width])
-        .padding(0.1);
-var yb = d3.scaleLinear()
-        .range([height, 0]);
-	
-	// ranges line chart//
-var xl = d3.scaleTime().range([0, width]);  
-var yl = d3.scaleLinear().range([height, 0]);
-	
-	// ranges grouped bar chart//
-var xbg0 = d3.scaleBand()
-    .rangeRound([0, width])
-    .paddingInner(0.1);
-var xbg1 = d3.scaleBand()
-    .padding(0.05);
-var ybg = d3.scaleLinear()
-    .rangeRound([height, 0]);
-var zbg = d3.scaleOrdinal()
-    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"]); //, "#d0743c", "#ff8c00"]);
-	
-// Define the div for the tooltip
-var tooltip = d3.select("body").append("div").attr("class", "toolTip");
-	
-
-	// Adds the chart canvas          
-var chart = d3.select("body").append("svg")
+// set the ranges
+var x = d3.scaleBand()
+          .range([0, width])
+          .padding(0.1);
+var y = d3.scaleLinear()
+          .range([height, 0]);
+          
+// append the svg object to the body of the page
+// append a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", 
-	  "translate(" + margin.left + "," + margin.top + ")");
-
-	// Get the data
-//d3.csv("ecommarktanalyse.csv", function(error, data) {
-  //if (error) throw error;
-  
-var data = d3.csvParse(csv);
+          "translate(" + margin.left + "," + margin.top + ")");
+// get the data
+d3.csv("data.csv", function(error, data) {
+  if (error) throw error;
 	
-  	// format the data
+  // format the data
   data.forEach(function(d) {
-    d.eur = +d.eur;
+    d.sales = +d.sales;
   });
-	
-  	// Scale the range of the data in the domains
-  xb.domain(data.map(function(d) { return d.jaar; }));
-  yb.domain([0, d3.max(data, function(d) { return d.eur; })]);	
-  
-	// append the rectangles for the bar chart
-  chart.selectAll(".bar")
+  // Scale the range of the data in the domains
+  x.domain(data.map(function(d) { return d.salesperson; }));
+  y.domain([0, d3.max(data, function(d) { return d.sales; })]);
+  // append the rectangles for the bar chart
+  svg.selectAll(".bar")
       .data(data)
     .enter().append("rect")
       .attr("class", "bar")
-      .attr("x", function(d) { return xb(d.jaar); })
-      .attr("width", xb.bandwidth())
-      .attr("y", function(d) { return yb(d.eur); })
-      .attr("height", function(d) { return height - yb(d.eur); })
-      .on("mousemove", function(d){
-            tooltip
-              .style("left", d3.event.pageX + 10 + "px")
-              .style("top", d3.event.pageY - 25 + "px")
-              .style("display", "inline-block")
-              .html((d.jaar) + "<br>" + (d.eur) + " miljard euro");
-        })
-    		.on("mouseout", function(d){ tooltip.style("display", "none");});
-  
-  	// add the xB Axis
-  chart.append("g")
-      .attr("class", "axis")
+      .attr("x", function(d) { return x(d.salesperson); })
+      .attr("width", x.bandwidth())
+      .attr("y", function(d) { return y(d.sales); })
+      .attr("height", function(d) { return height - y(d.sales); });
+  // add the x Axis
+  svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(xb));
-  
-  	// add the yB Axis
-  chart.append("g")
-      .attr("class", "axis")  
-      .call(d3.axisLeft(yb));
-  
-	// Add a small label for the graph name.
-  chart.append("text")
-      .attr("class", "title")
-      .attr("x", 10)
-      .attr("y", -20)
-      .attr("font-weight", "bold")
-      .style("text-anchor", "start")
-      .style("font-size", 12)
-      .text("Omzet detailhandel 2011-2017 (CBS)");  
-   
+      .call(d3.axisBottom(x));
+  // add the y Axis
+  svg.append("g")
+      .call(d3.axisLeft(y));
 });
-
-
 </script>
 </body>
