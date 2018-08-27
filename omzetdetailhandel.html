@@ -77,7 +77,7 @@ d3.csv("data.csv", function(error, data) {
               .style("left", d3.event.pageX + 10 + "px")
               .style("top", d3.event.pageY - 25 + "px")
               .style("display", "inline-block")
-              .html((d.jaar) + "<br>" + "€ " + (d.dividend));
+              .html((d.jaar1) + "<br>" + "€ " + (d.dhomzetcbs));
         })
     		.on("mouseout", function(d){ tooltip.style("display", "none");});
   
