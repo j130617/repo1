@@ -4,7 +4,23 @@
 <style> /* set the CSS */
 body { font: 12px Arial;}
 
-	.bar { fill: steelblue; }
+.bar { fill: steelblue; }
+
+.toolTip {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position: absolute;
+    display: none;
+    width: auto;
+    height: auto;
+    background: none repeat scroll 0 0 white;
+    border: 0 none;
+    border-radius: 8px 8px 8px 8px;
+    box-shadow: -3px 3px 15px #888888;
+    color: black;
+    font: 12px sans-serif;
+    padding: 5px;
+    text-align: center;
+}
 </style>
 <body>
 	
@@ -55,7 +71,15 @@ d3.csv("data.csv", function(error, data) {
       .attr("x", function(d) { return x(d.jaar1); })
       .attr("width", x.bandwidth())
       .attr("y", function(d) { return y(d.dhomzetcbs); })
-      .attr("height", function(d) { return height - y(d.dhomzetcbs); });
+      .attr("height", function(d) { return height - y(d.dhomzetcbs); })
+      .on("mousemove", function(d){
+            tooltip
+              .style("left", d3.event.pageX + 10 + "px")
+              .style("top", d3.event.pageY - 25 + "px")
+              .style("display", "inline-block")
+              .html((d.jaar) + "<br>" + "€ " + (d.dividend));
+        })
+    		.on("mouseout", function(d){ tooltip.style("display", "none");});
   
 	// add the x Axis
   svg.append("g")
